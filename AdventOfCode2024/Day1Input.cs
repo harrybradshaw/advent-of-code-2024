@@ -1,6 +1,6 @@
 namespace AdventOfCode2024;
 
-public static class Input
+public static class Day1Input
 {
     public const string Day1 = """
                         37033   48086
