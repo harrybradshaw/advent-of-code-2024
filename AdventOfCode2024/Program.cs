@@ -1,7 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 
 using AdventOfCode2024;
-using AdventOfCode2024.Day3;
+using AdventOfCode2024.Day4;
 
+Day4.Part1();
 
-Day3.Run(Day3Input.Puzzle);
