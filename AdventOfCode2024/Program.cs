@@ -2,6 +2,7 @@
 
 using AdventOfCode2024;
 using AdventOfCode2024.Day4;
+using AdventOfCode2024.Day5;
 
-Day4.Part1();
+Day5.Part1();
 
