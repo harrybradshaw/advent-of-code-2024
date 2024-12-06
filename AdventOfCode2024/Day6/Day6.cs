@@ -25,14 +25,13 @@ public class Day6
 
     public static void Part2(string input)
     {
-        var gridToInit = new Grid(input);
-        var (uniquePositions, _) = Run(gridToInit);
+        var grid = new Grid(input);
+        var (uniquePositions, _) = Run(grid);
         var counter = 0;
 
         foreach (var pos in uniquePositions)
         {
             var (x, y) = pos;
-            var grid = new Grid(input);
             var startingChar = grid.GetElement(x, y);
             if (startingChar != '#' && startingChar != '^')
             {
@@ -42,6 +41,7 @@ public class Day6
                 {
                     counter += 1;
                 }
+                grid.PlaceCharAtPosition(x, y, startingChar);
             }
         }
         Console.WriteLine(counter);
@@ -79,10 +79,8 @@ public class Day6
             }
             else
             {
-                var positionDirectionTuple =
-                    new Tuple<int, int, Direction>(position.Item1, position.Item2,  currentDirection);
                 positions.Add(position);
-                if (!positionsWithDirection.Add(positionDirectionTuple))
+                if (!positionsWithDirection.Add(new Tuple<int, int, Direction>(position.Item1, position.Item2,  currentDirection)))
                 {
                     break;
                 }

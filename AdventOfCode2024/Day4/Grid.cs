@@ -14,10 +14,13 @@ public class Grid
     private readonly int _yMax = 0;
     
     private readonly List<List<char>> _grid;
+
+    private readonly Dictionary<char, Tuple<int, int>> _locationLookup;
     
     public Grid(string input)
     {
         _grid = [];
+        _locationLookup = new Dictionary<char, Tuple<int, int>>();
         using var reader = new StringReader(input);
         while (reader.ReadLine() is { } line)
         {
@@ -136,29 +139,25 @@ public class Grid
 
     public (int, int) SetRefOnChar(char character)
     {
+        if (_locationLookup.TryGetValue(character, out var location))
+        {
+            SetRef(location.Item1, location.Item2);
+            return (location.Item1, location.Item2);
+        }
+        
         for (var y = 0; y < _yMax; y++)
         {
             for (var x = 0; x < _xMax; x++)
             {
                 if (GetElementAndSetRef(x, y) == character)
                 {
+                    _locationLookup[character] = new Tuple<int, int>(x, y);
                     return (x, y);
                 }
             }
         }
 
         throw new Exception();
-    }
-
-    public void IterateThroughGrid(Action<int, int> onIteration)
-    {
-        for (var y = 0; y < _yMax; y++)
-        {
-            for (var x = 0; x < _xMax; x++)
-            {
-                onIteration(x, y);
-            }
-        }
     }
 
     public void PlaceCharAtPosition(int x, int y, char charToPlace)
