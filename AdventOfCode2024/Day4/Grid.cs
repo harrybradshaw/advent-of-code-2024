@@ -31,17 +31,28 @@ public class Grid
         
     }
 
-    private char? GetElementAndSetRef(int x, int y)
+    public Tuple<int, int> GetPosition()
+    {
+        return new Tuple<int, int>(_xRef, _yRef);
+    }
+
+    private char? GetElementAndSetRef(int x, int y, char? blockingChar = null)
     {
         if (x < 0 || x >= _xMax || y < 0 || y >= _yMax)
         {
             return null;
         }
+
+        var element = GetElement(x, y);
+        if (blockingChar != null && element == blockingChar)
+        {
+            return element;
+        }
         SetRef(x, y);
-        return GetElement(x, y);
+        return element;
     }
 
-    private char GetElement(int x, int y)
+    public char GetElement(int x, int y)
     {
         return _grid[y][x];
     }
@@ -57,7 +68,7 @@ public class Grid
         var x = Traverse(direction);
         if (x == null)
         {
-            output = '#';
+            output = '!';
             return false;
         }
 
@@ -65,18 +76,18 @@ public class Grid
         return true;
     }
 
-    private char? Traverse(Direction direction)
+    public char? Traverse(Direction direction, char? blockingChar = null)
     {
         return direction switch
         {
-            Direction.North => GetElementAndSetRef(_xRef, _yRef - 1),
-            Direction.South => GetElementAndSetRef(_xRef, _yRef + 1),
-            Direction.West => GetElementAndSetRef(_xRef - 1, _yRef),
-            Direction.East => GetElementAndSetRef(_xRef + 1, _yRef),
-            Direction.NorthEast => GetElementAndSetRef(_xRef + 1, _yRef - 1),
-            Direction.NorthWest => GetElementAndSetRef(_xRef - 1, _yRef - 1),
-            Direction.SouthEast => GetElementAndSetRef(_xRef + 1, _yRef + 1),
-            Direction.SouthWest => GetElementAndSetRef(_xRef - 1, _yRef + 1),
+            Direction.North => GetElementAndSetRef(_xRef, _yRef - 1, blockingChar),
+            Direction.South => GetElementAndSetRef(_xRef, _yRef + 1, blockingChar),
+            Direction.West => GetElementAndSetRef(_xRef - 1, _yRef, blockingChar),
+            Direction.East => GetElementAndSetRef(_xRef + 1, _yRef, blockingChar),
+            Direction.NorthEast => GetElementAndSetRef(_xRef + 1, _yRef - 1, blockingChar),
+            Direction.NorthWest => GetElementAndSetRef(_xRef - 1, _yRef - 1, blockingChar),
+            Direction.SouthEast => GetElementAndSetRef(_xRef + 1, _yRef + 1, blockingChar),
+            Direction.SouthWest => GetElementAndSetRef(_xRef - 1, _yRef + 1, blockingChar),
             _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
         };
     }
@@ -121,5 +132,37 @@ public class Grid
                 }
             }
         }
+    }
+
+    public (int, int) SetRefOnChar(char character)
+    {
+        for (var y = 0; y < _yMax; y++)
+        {
+            for (var x = 0; x < _xMax; x++)
+            {
+                if (GetElementAndSetRef(x, y) == character)
+                {
+                    return (x, y);
+                }
+            }
+        }
+
+        throw new Exception();
+    }
+
+    public void IterateThroughGrid(Action<int, int> onIteration)
+    {
+        for (var y = 0; y < _yMax; y++)
+        {
+            for (var x = 0; x < _xMax; x++)
+            {
+                onIteration(x, y);
+            }
+        }
+    }
+
+    public void PlaceCharAtPosition(int x, int y, char charToPlace)
+    {
+        _grid[y][x] = charToPlace;
     }
 }
