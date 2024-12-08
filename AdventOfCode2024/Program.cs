@@ -4,6 +4,8 @@ using AdventOfCode2024;
 using AdventOfCode2024.Day4;
 using AdventOfCode2024.Day5;
 using AdventOfCode2024.Day6;
+using AdventOfCode2024.Day8;
 
-Day6.Part2(Day6Input.Puzzle);
+Day8.Part1();
+Day8.Part2();
 
