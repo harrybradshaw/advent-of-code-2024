@@ -6,7 +6,7 @@ using AdventOfCode2024.Day5;
 using AdventOfCode2024.Day6;
 using AdventOfCode2024.Day7;
 using AdventOfCode2024.Day8;
+using AdventOfCode2024.Day9;
 
-var day7 = new Day7();
-day7.Part2(Day7Input.Puzzle);
+Day9.Part2(Day9Input.Puzzle);
 
