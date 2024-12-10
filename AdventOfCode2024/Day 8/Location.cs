@@ -1,4 +1,4 @@
-﻿namespace AdventOfCode2024.Day8;
+﻿namespace AdventOfCode2024.Day_8;
 
 public class Location
 {

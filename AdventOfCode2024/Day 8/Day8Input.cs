@@ -1,4 +1,4 @@
-﻿namespace AdventOfCode2024.Day8;
+﻿namespace AdventOfCode2024.Day_8;
 
 public static class Day8Input
 {
@@ -17,7 +17,7 @@ public static class Day8Input
                                  ............
                                  """;
 
-    public const string Sample2 = """
+    public const string SampleTwo = """
                                   T....#....
                                   ...T......
                                   .T....#...

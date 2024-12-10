@@ -1,60 +1,35 @@
-﻿namespace AdventOfCode2024.Day8;
+﻿using AdventOfCode2024.Helpers;
 
-public class CityMap
+namespace AdventOfCode2024.Day_8;
+
+public class CityMap : Grid
 {
-    private readonly int _xMax = 0;
-    private readonly int _yMax = 0;
-
     private readonly List<Location> _radioLocations;
-    private readonly ILookup<char, Location> _radioLocationLookup;
     
-    public CityMap(string input)
+    public CityMap(string input) : base(input)
     {
-        List<List<char>> grid = [];
-        using var reader = new StringReader(input);
-        while (reader.ReadLine() is { } line)
-        {
-            if (line.Length > 0)
-            {
-                grid.Add(line.ToCharArray().ToList());
-                _xMax = line.Length;
-            }
-            _yMax++;
-        }
-
-        _radioLocations = new List<Location>();
-        for (var y = 0; y < _yMax; y++)
-        {
-            for (var x = 0; x < _xMax; x++)
-            {
-                var location = grid[y][x];
-                if (location != '.' && location != '#')
+        _radioLocations = _locationDictionary.Keys
+            .Where(c => c != '.' && c != '#')
+            .SelectMany(c => _locationDictionary[c].Select(l => new Location
                 {
-                    _radioLocations.Add(new Location
-                    {
-                        Frequency = location,
-                        x = x,
-                        y = y,
-                    });
-                }
-               
-            }
-        }
-
-        _radioLocationLookup = _radioLocations.ToLookup(r => r.Frequency);
+                    Frequency = c,
+                    x = l.Item1,
+                    y = l.Item2,
+                }))
+            .ToList();
     }
 
-    public void FindAntinodes(bool specificDistance = true)
+    public int FindAntinodes(bool specificDistance = true)
     {
         var antinodes = new List<Location>();
         foreach (var location in _radioLocations)
         {
-            var allLocations = _radioLocationLookup[location.Frequency];
+            var allLocations = _locationDictionary[location.Frequency];
             foreach (var pairedLocation in allLocations)
             {
-                if (location != pairedLocation)
+                if (location.x != pairedLocation.Item1 && location.y != pairedLocation.Item2)
                 {
-                    var difference = (location.x - pairedLocation.x, location.y - pairedLocation.y);
+                    var difference = (location.x - pairedLocation.Item1, location.y - pairedLocation.Item2);
 
                     var multi = specificDistance ? 1 : 0;
                     while (location.IsWithinBounds(difference, multi, _xMax, _xMax)
@@ -89,5 +64,6 @@ public class CityMap
 
         var distinctLocations = antinodes.DistinctBy(h => (h.x, h.y)).ToList();
         Console.WriteLine(distinctLocations.Count);
+        return distinctLocations.Count;
     }
 }

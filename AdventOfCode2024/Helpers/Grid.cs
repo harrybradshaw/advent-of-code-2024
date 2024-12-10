@@ -14,7 +14,7 @@ public class Grid
     protected readonly int _yMax = 0;
     
     private readonly List<List<char>> _grid;
-    private readonly Dictionary<char, List<Tuple<int, int>>> _locationDictionary;
+    protected readonly Dictionary<char, List<Tuple<int, int>>> _locationDictionary;
     
     public Grid(string input)
     {
