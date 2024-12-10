@@ -7,8 +7,8 @@ public static class Day10
     public static int Part1(string input)
     {
         var finishingGridNavigators = Run(input);
-        var l = finishingGridNavigators.ToLookup(d => (x: d.X, y: d.Y));
-        var score = l.Aggregate(0, (i, tupleGroups) => i + tupleGroups.DistinctBy(d => d.StartingLocation).Count());
+        var l = finishingGridNavigators.ToLookup(d => d.Coords);
+        var score = l.Aggregate(0, (i, gridNavigatorsForFinishingLocation) => i + gridNavigatorsForFinishingLocation.DistinctBy(d => d.StartingLocation).Count());
         return score;
     }
 
@@ -22,8 +22,8 @@ public static class Day10
 
     private static List<GridNavigator> Run(string input)
     {
-        var grid = new Grid(input, fillLookup: true);
-        var startingLocations = grid.LocationLookup['0'];
+        var grid = new Grid(input);
+        var startingLocations = grid.GetLocations('0');
         var queue = new Queue<GridNavigator>();
         var directionsToSearch = new List<Direction>
         {
@@ -47,15 +47,15 @@ public static class Day10
         {
             var item = queue.Dequeue();
             var valueChar = grid.GetElementAndSetRef(item.X, item.Y);
-            var value = int.Parse(valueChar.ToString());
+            var value = int.Parse(valueChar!.Value.ToString());
             foreach (var direction in directionsToSearch)
             {
-                var inDirection = grid.PeekTraverse(direction);
+                var inDirection = grid.PeekNextElement(direction);
                 if (inDirection.HasValue
                     && int.TryParse(inDirection.ToString(), out var inDirectionInt)
                     && inDirectionInt - value == 1)
                 {
-                    var newCor = grid.GetCoOrds(direction);
+                    var newCor = grid.PeekNextCoordinates(direction);
                     var newGridNav = new GridNavigator
                     {
                         StartingLocation = item.StartingLocation,

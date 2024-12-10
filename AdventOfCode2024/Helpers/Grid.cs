@@ -7,45 +7,40 @@ public enum Direction
 
 public class Grid
 {
-    private int _xRef = 0;
-    private int _yRef = 0;
+    protected int _xRef = 0;
+    protected int _yRef = 0;
 
-    private readonly int _xMax = 0;
-    private readonly int _yMax = 0;
+    protected readonly int _xMax = 0;
+    protected readonly int _yMax = 0;
     
     private readonly List<List<char>> _grid;
-
-    public Dictionary<char, List<Tuple<int, int>>> LocationLookup { get; set; }
+    private readonly Dictionary<char, List<Tuple<int, int>>> _locationDictionary;
     
-    public Grid(string input, bool fillLookup = false)
+    public Grid(string input)
     {
         _grid = [];
-        LocationLookup = new Dictionary<char, List<Tuple<int, int>>>();
+        _locationDictionary = new Dictionary<char, List<Tuple<int, int>>>();
         using var reader = new StringReader(input);
         while (reader.ReadLine() is { } line)
         {
             if (line.Length > 0)
             {
                 _grid.Add(line.ToCharArray().ToList());
-                if (fillLookup)
+                for (var i = 0; i < line.Length; i++)
                 {
-                    for (int i = 0; i < line.Length; i++)
+                    var charToAdd = line[i];
+                    if (!_locationDictionary.TryAdd(charToAdd, [new(i, _yMax)]))
                     {
-                        var charToAdd = line[i];
-                        if (!LocationLookup.TryAdd(charToAdd, [new(i, _yMax)]))
-                        {
-                            LocationLookup[charToAdd].Add(new (i, _yMax));
-                        }
+                        _locationDictionary[charToAdd].Add(new (i, _yMax));
                     }
                 }
                 _xMax = line.Length;
             }
             _yMax++;
         }
-        
     }
 
-    public Tuple<int, int> GetPosition()
+    public Tuple<int, int> GetCurrentPosition()
     {
         return new Tuple<int, int>(_xRef, _yRef);
     }
@@ -58,6 +53,11 @@ public class Grid
         }
 
         return GetElement(x, y);
+    }
+
+    public char? GetElementOrDefault((int x, int y) coords)
+    {
+        return GetElementOrDefault(coords.x, coords.y);
     }
 
     public char? GetElementAndSetRef(int x, int y, char? blockingChar = null)
@@ -76,47 +76,41 @@ public class Grid
         return _grid[y][x];
     }
 
-    public void SetRef(int x, int y)
+    public List<Tuple<int, int>> GetLocations(char characterToFind)
+    {
+        return _locationDictionary[characterToFind];
+    }
+
+    public void SetRef(Tuple<int, int> coords)
+    {
+        SetRef(coords.Item1, coords.Item2);
+    }
+
+    private void SetRef(int x, int y)
     {
         _xRef = x;
         _yRef = y;
     }
 
-    public void SetRef(Tuple<int, int> co)
+    protected bool TryTraverse(Direction direction, out char output)
     {
-        SetRef(co.Item1, co.Item2);
-    }
-
-    private bool TryTraverse(Direction direction, out char output)
-    {
-        var x = Traverse(direction);
-        if (x == null)
+        var characterAtNewCoords = Traverse(direction);
+        if (characterAtNewCoords == null)
         {
             output = '!';
             return false;
         }
 
-        output = x.GetValueOrDefault();
+        output = characterAtNewCoords.GetValueOrDefault();
         return true;
     }
 
-    public char? PeekTraverse(Direction direction, char? blockingChar = null)
+    public char? PeekNextElement(Direction direction)
     {
-        return direction switch
-        {
-            Direction.North => GetElementOrDefault(_xRef, _yRef - 1),
-            Direction.South => GetElementOrDefault(_xRef, _yRef + 1),
-            Direction.West => GetElementOrDefault(_xRef - 1, _yRef),
-            Direction.East => GetElementOrDefault(_xRef + 1, _yRef),
-            Direction.NorthEast => GetElementOrDefault(_xRef + 1, _yRef - 1),
-            Direction.NorthWest => GetElementOrDefault(_xRef - 1, _yRef - 1),
-            Direction.SouthEast => GetElementOrDefault(_xRef + 1, _yRef + 1),
-            Direction.SouthWest => GetElementOrDefault(_xRef - 1, _yRef + 1),
-            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
-        };
+        return GetElementOrDefault(PeekNextCoordinates(direction));
     }
 
-    public (int, int) GetCoOrds(Direction direction)
+    public (int, int) PeekNextCoordinates(Direction direction)
     {
         return direction switch
         {
@@ -134,92 +128,15 @@ public class Grid
 
     public char? Traverse(Direction direction, char? blockingChar = null)
     {
-        return direction switch
-        {
-            Direction.North => GetElementAndSetRef(_xRef, _yRef - 1, blockingChar),
-            Direction.South => GetElementAndSetRef(_xRef, _yRef + 1, blockingChar),
-            Direction.West => GetElementAndSetRef(_xRef - 1, _yRef, blockingChar),
-            Direction.East => GetElementAndSetRef(_xRef + 1, _yRef, blockingChar),
-            Direction.NorthEast => GetElementAndSetRef(_xRef + 1, _yRef - 1, blockingChar),
-            Direction.NorthWest => GetElementAndSetRef(_xRef - 1, _yRef - 1, blockingChar),
-            Direction.SouthEast => GetElementAndSetRef(_xRef + 1, _yRef + 1, blockingChar),
-            Direction.SouthWest => GetElementAndSetRef(_xRef - 1, _yRef + 1, blockingChar),
-            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
-        };
-    }
-
-    public (int, int) GetPrevious(Direction direction)
-    {
-        return direction switch
-        {
-            Direction.NorthWest => (_xRef + 1, _yRef + 1),
-            Direction.NorthEast => (_xRef - 1, _yRef + 1),
-            Direction.SouthEast => (_xRef - 1, _yRef - 1),
-            Direction.SouthWest => (_xRef + 1, _yRef - 1),
-            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
-        };
+        var (x, y) = PeekNextCoordinates(direction);
+        return GetElementAndSetRef(x, y, blockingChar);
     }
     
-    public void FindWord(string word, List<Direction> directions, Action<Grid, Direction> onWordFound)
-    {
-        for (var y = 0; y < _yMax; y++)
-        {
-            for (var x = 0; x < _xMax; x++)
-            {
-                if (GetElement(x,y) == word[0])
-                {
-                    foreach (var direction in directions)
-                    {
-                        var startingChar = GetElementAndSetRef(x, y);
-                        var letterCounter = 0;
-                        if (startingChar == word[letterCounter])
-                        {
-                            letterCounter++;
-                            while (TryTraverse(direction, out var output) && letterCounter <= word.Length - 1 && word[letterCounter] == output)
-                            {
-                                if (letterCounter == word.Length - 1)
-                                {
-                                    onWordFound(this, direction);
-                                }
-                                letterCounter++;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    public (int, int) SetRefOnSingleChar(char character)
-    {
-        if (LocationLookup.TryGetValue(character, out var locationList) && locationList.Count > 0)
-        {
-            var location = locationList[0];
-            SetRef(location.Item1, location.Item2);
-            return (location.Item1, location.Item2);
-        }
-        
-        for (var y = 0; y < _yMax; y++)
-        {
-            for (var x = 0; x < _xMax; x++)
-            {
-                if (GetElementAndSetRef(x, y) == character)
-                {
-                    LocationLookup[character] =
-                    [
-                        new Tuple<int, int>(x, y)
-                    ];
-                    return (x, y);
-                }
-            }
-        }
-
-        throw new Exception();
-    }
     
 
     public void PlaceCharAtPosition(int x, int y, char charToPlace)
     {
+        // LocationLookup not valid post doing this.
         _grid[y][x] = charToPlace;
     }
 }
