@@ -47,7 +47,7 @@ public class Grid
 
     public char? GetElementOrDefault(int x, int y)
     {
-        if (x < 0 || x >= _xMax || y < 0 || y >= _yMax)
+        if (!IsWithinBounds((x, y)))
         {
             return null;
         }
@@ -138,5 +138,13 @@ public class Grid
     {
         // LocationLookup not valid post doing this.
         _grid[y][x] = charToPlace;
+    }
+
+    protected bool IsWithinBounds((int x, int y) coords)
+    {
+        return coords.x < _xMax
+               && coords.y < _yMax
+               && coords.x >= 0
+               && coords.y >= 0;
     }
 }

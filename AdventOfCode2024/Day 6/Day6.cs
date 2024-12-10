@@ -2,7 +2,7 @@
 
 namespace AdventOfCode2024.Day_6;
 
-public class Day6
+public static class Day6
 {
     public static int Part1(string input)
     {

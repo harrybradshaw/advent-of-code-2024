@@ -21,7 +21,7 @@ public class CityMap : Grid
 
     public int FindAntinodes(bool specificDistance = true)
     {
-        var antinodes = new List<Location>();
+        var antinodeLocations = new HashSet<(int, int)>();
         foreach (var location in _radioLocations)
         {
             var allLocations = _locationDictionary[location.Frequency];
@@ -32,38 +32,30 @@ public class CityMap : Grid
                     var difference = (location.x - pairedLocation.Item1, location.y - pairedLocation.Item2);
 
                     var multi = specificDistance ? 1 : 0;
-                    while (location.IsWithinBounds(difference, multi, _xMax, _xMax)
+                    while (IsWithinBounds(GenerateNewCoords(location, difference, multi))
                            && (!specificDistance || multi <= 1))
                     {
-                        var newLocation = new Location
-                        {
-                            Frequency = '#',
-                            x = location.x + multi * difference.Item1,
-                            y = location.y + multi * difference.Item2,
-                        };
-                        antinodes.Add(newLocation);
+                        antinodeLocations.Add(GenerateNewCoords(location, difference, multi));
                         multi++;
                     }
                     
                     multi = specificDistance ? -2 : -1;
-                    while (location.IsWithinBounds(difference, multi, _xMax, _xMax)
+                    while (IsWithinBounds(GenerateNewCoords(location, difference, multi))
                            && (!specificDistance || multi >= -2))
                     {
-                        var newLocation = new Location
-                        {
-                            Frequency = '#',
-                            x = location.x + multi * difference.Item1,
-                            y = location.y + multi * difference.Item2,
-                        };
-                        antinodes.Add(newLocation);
+                        antinodeLocations.Add(GenerateNewCoords(location, difference, multi));
                         multi--;
                     }
                 }
             }
         }
 
-        var distinctLocations = antinodes.DistinctBy(h => (h.x, h.y)).ToList();
-        Console.WriteLine(distinctLocations.Count);
-        return distinctLocations.Count;
+        Console.WriteLine(antinodeLocations.Count);
+        return antinodeLocations.Count;
+    }
+
+    private static (int, int) GenerateNewCoords(Location location, (int, int) difference, int multi)
+    {
+        return (location.x + multi * difference.Item1, location.y + multi * difference.Item2);
     }
 }
