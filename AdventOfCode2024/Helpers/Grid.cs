@@ -1,4 +1,4 @@
-namespace AdventOfCode2024.Day4;
+namespace AdventOfCode2024.Helpers;
 
 public enum Direction
 {
@@ -15,18 +15,29 @@ public class Grid
     
     private readonly List<List<char>> _grid;
 
-    private readonly Dictionary<char, Tuple<int, int>> _locationLookup;
+    public Dictionary<char, List<Tuple<int, int>>> LocationLookup { get; set; }
     
-    public Grid(string input)
+    public Grid(string input, bool fillLookup = false)
     {
         _grid = [];
-        _locationLookup = new Dictionary<char, Tuple<int, int>>();
+        LocationLookup = new Dictionary<char, List<Tuple<int, int>>>();
         using var reader = new StringReader(input);
         while (reader.ReadLine() is { } line)
         {
             if (line.Length > 0)
             {
                 _grid.Add(line.ToCharArray().ToList());
+                if (fillLookup)
+                {
+                    for (int i = 0; i < line.Length; i++)
+                    {
+                        var charToAdd = line[i];
+                        if (!LocationLookup.TryAdd(charToAdd, [new(i, _yMax)]))
+                        {
+                            LocationLookup[charToAdd].Add(new (i, _yMax));
+                        }
+                    }
+                }
                 _xMax = line.Length;
             }
             _yMax++;
@@ -39,14 +50,19 @@ public class Grid
         return new Tuple<int, int>(_xRef, _yRef);
     }
 
-    private char? GetElementAndSetRef(int x, int y, char? blockingChar = null)
+    public char? GetElementOrDefault(int x, int y)
     {
         if (x < 0 || x >= _xMax || y < 0 || y >= _yMax)
         {
             return null;
         }
 
-        var element = GetElement(x, y);
+        return GetElement(x, y);
+    }
+
+    public char? GetElementAndSetRef(int x, int y, char? blockingChar = null)
+    {
+        var element = GetElementOrDefault(x, y);
         if (blockingChar != null && element == blockingChar)
         {
             return element;
@@ -60,10 +76,15 @@ public class Grid
         return _grid[y][x];
     }
 
-    private void SetRef(int x, int y)
+    public void SetRef(int x, int y)
     {
         _xRef = x;
         _yRef = y;
+    }
+
+    public void SetRef(Tuple<int, int> co)
+    {
+        SetRef(co.Item1, co.Item2);
     }
 
     private bool TryTraverse(Direction direction, out char output)
@@ -77,6 +98,38 @@ public class Grid
 
         output = x.GetValueOrDefault();
         return true;
+    }
+
+    public char? PeekTraverse(Direction direction, char? blockingChar = null)
+    {
+        return direction switch
+        {
+            Direction.North => GetElementOrDefault(_xRef, _yRef - 1),
+            Direction.South => GetElementOrDefault(_xRef, _yRef + 1),
+            Direction.West => GetElementOrDefault(_xRef - 1, _yRef),
+            Direction.East => GetElementOrDefault(_xRef + 1, _yRef),
+            Direction.NorthEast => GetElementOrDefault(_xRef + 1, _yRef - 1),
+            Direction.NorthWest => GetElementOrDefault(_xRef - 1, _yRef - 1),
+            Direction.SouthEast => GetElementOrDefault(_xRef + 1, _yRef + 1),
+            Direction.SouthWest => GetElementOrDefault(_xRef - 1, _yRef + 1),
+            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+        };
+    }
+
+    public (int, int) GetCoOrds(Direction direction)
+    {
+        return direction switch
+        {
+            Direction.North => (_xRef, _yRef - 1),
+            Direction.South => (_xRef, _yRef + 1),
+            Direction.West => (_xRef - 1, _yRef),
+            Direction.East => (_xRef + 1, _yRef),
+            Direction.NorthEast => (_xRef + 1, _yRef - 1),
+            Direction.NorthWest => (_xRef - 1, _yRef - 1),
+            Direction.SouthEast => (_xRef + 1, _yRef + 1),
+            Direction.SouthWest => (_xRef - 1, _yRef + 1),
+            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
+        };
     }
 
     public char? Traverse(Direction direction, char? blockingChar = null)
@@ -137,10 +190,11 @@ public class Grid
         }
     }
 
-    public (int, int) SetRefOnChar(char character)
+    public (int, int) SetRefOnSingleChar(char character)
     {
-        if (_locationLookup.TryGetValue(character, out var location))
+        if (LocationLookup.TryGetValue(character, out var locationList) && locationList.Count > 0)
         {
+            var location = locationList[0];
             SetRef(location.Item1, location.Item2);
             return (location.Item1, location.Item2);
         }
@@ -151,7 +205,10 @@ public class Grid
             {
                 if (GetElementAndSetRef(x, y) == character)
                 {
-                    _locationLookup[character] = new Tuple<int, int>(x, y);
+                    LocationLookup[character] =
+                    [
+                        new Tuple<int, int>(x, y)
+                    ];
                     return (x, y);
                 }
             }
@@ -159,6 +216,7 @@ public class Grid
 
         throw new Exception();
     }
+    
 
     public void PlaceCharAtPosition(int x, int y, char charToPlace)
     {

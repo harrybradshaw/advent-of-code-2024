@@ -1,4 +1,4 @@
-﻿namespace AdventOfCode2024.Day6;
+﻿namespace AdventOfCode2024.Day_6;
 
 public static class Day6Input
 {

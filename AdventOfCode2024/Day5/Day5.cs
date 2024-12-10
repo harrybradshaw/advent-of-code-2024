@@ -1,5 +1,3 @@
-using AdventOfCode2024.Day4;
-
 namespace AdventOfCode2024.Day5;
 
 public static class Day5

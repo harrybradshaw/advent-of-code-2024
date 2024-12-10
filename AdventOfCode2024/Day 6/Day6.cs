@@ -1,29 +1,18 @@
-﻿using AdventOfCode2024.Day4;
+﻿using AdventOfCode2024.Helpers;
 
-namespace AdventOfCode2024.Day6;
+namespace AdventOfCode2024.Day_6;
 
 public class Day6
 {
-    private static Direction Rot90(Direction direction)
-    {
-        return direction switch
-        {
-            Direction.North => Direction.East,
-            Direction.East => Direction.South,
-            Direction.South => Direction.West,
-            Direction.West => Direction.North,
-            _ => throw new ArgumentOutOfRangeException(nameof(direction), direction, null)
-        };
-    }
-    
-    public static void Part1(string input)
+    public static int Part1(string input)
     {
         var grid = new Grid(input);
         var (uniquePositions, _) = Run(grid);
         Console.WriteLine(uniquePositions.Count);
+        return uniquePositions.Count;
     }
 
-    public static void Part2(string input)
+    public static int Part2(string input)
     {
         var grid = new Grid(input);
         var (uniquePositions, _) = Run(grid);
@@ -45,12 +34,13 @@ public class Day6
             }
         }
         Console.WriteLine(counter);
+        return counter;
     }
 
     private static (HashSet<Tuple<int, int>>, bool) Run(Grid grid)
     {
         var managedToExit = false;
-        grid.SetRefOnChar('^');
+        grid.SetRefOnSingleChar('^');
 
         var startingPosition = grid.GetPosition();
         var currentDirection = Direction.North;
@@ -70,7 +60,7 @@ public class Day6
             var position = grid.GetPosition();
             if (newChar == '#')
             {
-                currentDirection = Rot90(currentDirection);
+                currentDirection = DirectionHelper.Rot90(currentDirection);
             }
             else if (newChar == null)
             {
