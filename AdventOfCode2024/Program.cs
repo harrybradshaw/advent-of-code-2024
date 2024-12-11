@@ -2,9 +2,11 @@
 
 using AdventOfCode2024;
 using AdventOfCode2024.Day_10;
+using AdventOfCode2024.Day_11;
 using AdventOfCode2024.Day5;
 using AdventOfCode2024.Day7;
 using AdventOfCode2024.Day9;
 
-Day10.Part1(Day10Input.Puzzle);
+var driver = new Day11();
+driver.Part2(Day11Input.Puzzle);
 

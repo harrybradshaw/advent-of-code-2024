@@ -39,14 +39,13 @@ public static class Day6
 
     private static (HashSet<Tuple<int, int>>, bool) Run(Grid grid)
     {
-        var managedToExit = false;
         var startingLocations = grid.GetLocations('^');
         grid.SetRef(startingLocations.First());
 
         var startingPosition = startingLocations.First();
         var currentDirection = Direction.North;
 
-        var positionsWithDirection = new HashSet<Tuple<int, int, Direction>>
+        var positionsVisitedWithDirection = new HashSet<Tuple<int, int, Direction>>
         {
             new(startingPosition.Item1, startingPosition.Item2, currentDirection)
         };
@@ -65,19 +64,16 @@ public static class Day6
             }
             else if (newChar == null)
             {
-                managedToExit = true;
-                break;
+                return (positionsVisited, true);
             }
             else
             {
                 positionsVisited.Add(position);
-                if (!positionsWithDirection.Add(new Tuple<int, int, Direction>(position.Item1, position.Item2,  currentDirection)))
+                if (!positionsVisitedWithDirection.Add(new Tuple<int, int, Direction>(position.Item1, position.Item2,  currentDirection)))
                 {
-                    break;
+                    return (positionsVisited, false);
                 }
             }
         }
-
-        return (positionsVisited, managedToExit);
     }
 }
